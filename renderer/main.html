@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!--<title>Rádio Indoor</title>-->
+    <link rel="stylesheet" href="../bower_components/bulma/css/bulma.min.css">
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <style>
+  ::selection { background: white; /* WebKit/Blink Browsers */ }
+    #bVolOnOff.fa-volume-off ~ #lVolume { text-decoration: line-through }
+    html,body{ overflow: hidden }
+    #lGlobal{ white-space: nowrap }
+    * { cursor:pointer }
+    /*input,textarea{ cursor: auto }*/
+    :not(input):not(textarea),
+    :not(input):not(textarea)::after,
+    :not(input):not(textarea)::before {
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: default;
+    }
+    input, button, textarea, :focus {
+        outline: none; // You should add some other style for :focus to help UX/a11y
+    }
+    #pCategorias input[type=text]{ width:3em }
+
+    #pCategorias input[type=text]:disabled{ width:18em }
+  </style>
+  </head>
+  <body class="is-sucess">
+    <!-- JANELA DE LOGIN -->
+    <div id="wLogin" class="is-hidden">
+      <section class="hero is-success is-fullheight">
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <div class="column is-6 is-offset-3">
+                    <h3 class="title has-text-grey">Rádio Indoor<span id="appVersion"></span></h3>
+                    <p class="subtitle has-text-grey">Preencha e entre.</p>
+                    <div class="box">
+                        <article class="message is-danger is-hidden" id="erroLogin">
+                          <div class="message-body"></div>
+                        </article>
+                        <form>
+                            <div class="field">
+                                <div class="control">
+                                    <input class="input" type="text" placeholder="Servidor" autofocus="" id="inputServidor">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <div class="control">
+                                    <input class="input" type="text" placeholder="Usuário" autofocus="" id="inputUsuario">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <div class="control">
+                                    <input class="input" type="password" placeholder="Senha" id="inputSenha">
+                                </div>
+                            </div>
+
+                            <button class="button is-block is-info is-large is-fullwidth" id="bEntrar">Entrar</button>
+                        </form>
+                    </div>
+                    <!--<p class="has-text-grey">
+                        <a href="../">Suporte</a> &nbsp;·&nbsp;
+                        <a href="../">Controle Remoto</a> &nbsp;·&nbsp;
+                        <a href="../">Redefinir Senha</a>
+                    </p>-->
+                </div>
+            </div>
+        </div>
+    </section>
+    </div>
+    <!-- JANELA DE CARREGAMENTO -->
+    <div id="wLoad">
+      <div class="hero is-fullheight is-dark">
+        <div class="hero-body">
+          <div class="container has-text-centered">
+          <div><span class="loader" style="width:3em;height:3em;margin:0 auto"></span></div>
+          <h4><span id="infoLoad">Aguarde... Carregando...</span></h4>
+        </div>
+        </div>
+      </div>
+    </div>
+    <!-- JANELA PLAYER -->
+    <div class="is-hidden" id="wPlayer">
+      <section class="hero is-link">
+       <div class="hero-body">
+        <div id="wave"></div>
+        <div class="has-text-centered is-info">
+          <a id="bPrev" class="icon is-large has-text-white" title="Anterior"><i class="fa fa-3x fa-chevron-circle-left"></i></a>
+          <a id="bPlayPause" class="icon is-large has-text-white" title="Play"><i class="fa fa-3x fa-play-circle"></i></a>
+          <a id="bNext" class="icon is-large has-text-white" title="Pr&oacute;ximo"><i class="fa fa-3x fa-chevron-circle-right"></i></a>
+        </div>
+        <h1 class="title">Rádio Indoor</h1>
+        <h3 class="subtitle" id="lGlobal" style="white-space:no-wrap">Aguarde... Carregando...</h3>
+        <div class="columns">
+          <div class="column is-three-fifths"><h4 id="lSubGlobal"></h4></div>
+          <div class="column"><h5 id="lTime"></h5></div>
+          <div class="column"><h5>
+            <a id="bVolOnOff" class="icon fa fa-volume-up" title="Com/Sem Som"></a>
+            <a id="bVolDown" class="icon" title="Vol -"><i class="fa fa-minus-circle"></i></a>
+            <span id="lVolume">100%</span>
+            <a id="bVolUp" class="icon" title="Vol +"><i class="fa fa-plus-circle"></i></a>
+          </h5></div>
+        </div>
+
+          <p class="buttons has-text-centered">
+            <a class="button modal-button" data-target="wChamadas">
+              <span class="icon"><i class="fa fa-address-card"></i></span>
+              <span>Chamadas</span>
+            </a>
+            <a class="button modal-button" data-target="wPreferencias" id="bPreferencias">
+              <span class="icon"><i class="fa fa-cogs"></i></span>
+              <span>Prefer&ecirc;ncias</span>
+            </a>
+            <a class="button modal-button" data-target="wHistorico">
+              <span class="icon"><i class="fa fa-list"></i></span>
+              <span>Hist&oacute;rico</span>
+            </a>
+            <a class="button" id="bRefresh">
+              <span class="icon"><i class="fa fa-refresh"></i></span>
+              <span>Atualizar</span>
+            </a>
+            <!--<a class="button modal-button" data-target="wBug" title="Depurador para Suporte Técnico">
+              <span class="icon"><i class="fa fa-bug"></i></span>
+		  </a>-->
+		  <a class="button" id="wDebug" title="Depurador para Suporte Técnico">
+			<span class="icon"><i class="fa fa-bug"></i></span>
+		</a>
+            <a class="button" id="bSair">
+              <span class="icon"><i class="fa fa-sign-out"></i></span>
+              <span>Sair</span>
+            </a>
+          </p>
+
+        <div class="columns has-text-centered">
+          <div class="column">
+            <h3>Conex&atilde;o</h3>
+            <p><label class="tag" id="networkStatus">- - - </label></p>
+          </div>
+            <div class="column">
+            <h3>Tocados</h3>
+            <p><label class="tag" id="playedCount">0</label></p>
+          </div>
+            <div class="column">
+            <h3>Carregados</h3>
+            <p><label class="tag" id="loadedCount">0</label></p>
+          </div>
+            <div class="column">
+            <h3>Erros</h3>
+            <p><label class="tag has-text-danger" id="errorCount">0</label></p>
+        	</div>
+              <div class="column">
+              <h3>Cache</h3>
+              <p><label class="tag has-text-info" id="cacheCount">0 %</label></p>
+          	</div>
+        </div>
+       </div>
+      </section>
+    </div>
+    <!-- MODAIS -->
+    <div class="modal" id="wPreferencias">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <div class="box is-small">
+        <nav class="panel is-small is-size-7 set-genero">
+            <p class="panel-heading">M&uacute;sicas</p>
+            <div class="panel-block buttons" id="pGeneros"></div>
+        </nav>
+        <form class="panel is-small is-size-7 set-playlist" id="pCategorias">
+            <p class="panel-heading">&Aacute;udios</p>
+        </form>
+        <nav class="panel">
+          <div class="panel-block">
+            <button class="button is-link is-outlined is-fullwidth" id="bSetPreferencias">
+              salvar altera&ccedil;&otilde;es
+            </button>
+          </div>
+        </nav>
+        </div>
+      </div>
+      <button class="modal-close is-large"></button>
+    </div>
+    <div class="modal" id="wChamadas">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <div class="box is-small" style="height:400px">
+         <div class="buttons" id="tChamadasTitulos"></div>
+         <hr>
+        <div id="pChamadasCorpo"></div>
+      </div>
+    </div>
+      <button class="modal-close is-large"></button>
+    </div>
+	<!-- DEBUG -->
+    <div class="modal" id="wBug">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <div class="box is-small is-size-7">
+        <table class="table is-bordered is-stripped is-narrow is-hoverable">
+          <thead>
+            <tr>
+              <th>Hora</th>
+			  <th>Info</th>
+            </tr>
+          </thead>
+          <tbody style="height:400px;overflow:auto" id="debug">
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+      <button class="modal-close is-large"></button>
+    </div>
+	<!-- HISTORICO -->
+    <div class="modal" id="wHistorico">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <div class="box is-small is-size-7">
+        <table class="table is-bordered is-stripped is-narrow is-hoverable">
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Origem</th>
+              <th>Tipo</th>
+              <th>Grupo</th>
+              <th>Item</th>
+            </tr>
+          </thead>
+          <tbody style="height:400px;overflow:auto" id="historico">
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+      <button class="modal-close is-large"></button>
+    </div>
+    <!--ERROR-->
+    <div class="modal is-hidden" id="infoError">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <p>
+          <span class="icon"><i class="fa fa-3x fa-exclamation-triangle"></i></span>
+          <span id="infoError"></span>
+        </p>
+      </div>
+      <button class="modal-close is-large"></button>
+    </div>
+    <script>
+      // siriwave
+      require('./siriwave.js')
+      // jquery
+      $ = require('jquery')
+      // You can also require other files to run in this process
+      require('./renderer.js')
+    </script>
+  </body>
+</html>
